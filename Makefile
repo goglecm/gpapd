@@ -1,3 +1,8 @@
+define \n
+
+
+endef
+
 HDL = ghdl
 WAVEVIEWER = gtkwave
 
@@ -6,34 +11,74 @@ SIMDIR = sim/
 COMPONENTSDIR = components/
 
 ALL_WAVEVIEWER_FLAGS = \
-	-c 8
+	-c 8 \
+
+HDL_RUN_FLAGS = \
+	--assert-level=error \
+	--stop-delta=5000 \
+	--stop-time=50ns \
+	#--stats \
+	#--disp-time
 
 ALL_HDL_FLAGS = \
-	--assert-level=error \
-	--disp-time \
-	--stats \
-	--stop-delta=5000 \
-	--stop-time=100ns
+	#--std=02 \
 
-C_ELEMENT_SRC = \
+LIBRARY_SRC = \
+	$(COMPONENTSDIR)gpapd_lib.vhd
+
+ENTITY_SRC = \
 	$(COMPONENTSDIR)c_element_ent.vhd \
+	$(COMPONENTSDIR)and_gate_ent.vhd \
+
+ARCH_SRC = \
 	$(COMPONENTSDIR)c_element_arch_bvl.vhd \
+	$(COMPONENTSDIR)and_gate_arch_bvl.vhd \
+
+TB_SRC = \
 	$(COMPONENTSDIR)c_element_tb.vhd \
-	$(COMPONENTSDIR)c_element_bench.vhd
+	$(COMPONENTSDIR)and_gate_tb.vhd \
 
-C_ELEMENT_TOP_ENTITY = c_element_bench
-C_ELEMENT_WAVE_FILE = c_element_arch_bvl.vcd
+BENCH_SRC = \
+	$(COMPONENTSDIR)c_element_bench.vhd \
+	$(COMPONENTSDIR)and_gate_bench.vhd \
 
-.PHONY : clean all c_element_bvl
+ALL_SRC = \
+	$(LIBRARY_SRC) \
+	$(ENTITY_SRC) \
+	$(ARCH_SRC) \
+	$(TB_SRC) \
+	$(BENCH_SRC) \
+
+ALL_ENTITIES = \
+	c_element_bench \
+	and_gate_bench \
+
+ALL_WAVE_FILES = \
+	c_element_arch_bvl.vcd \
+	and_gate_arch_bvl.vcd \
+
+
+.PHONY : clean all c_element_bvl and_gate_bvl
 
 c_element_bvl :
-	$(HDL) -a --workdir=$(WORKDIR) $(C_ELEMENT_SRC)
-	$(HDL) -e --workdir=$(WORKDIR) $(C_ELEMENT_TOP_ENTITY)
-	$(HDL) -r --workdir=$(WORKDIR) $(C_ELEMENT_TOP_ENTITY) $(ALL_HDL_FLAGS) --vcd=$(SIMDIR)$(C_ELEMENT_WAVE_FILE)
-	$(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)c_element_arch_bvl.vcd
+	# $(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)$(C_ELEMENT_WAVE_FILE)
 
-clean :
-	rm -rf $(WORKDIR)**
-	rm -rf $(SIMDIR)**
+and_gate_bvl :
+	# $(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)$(AND_GATE_WAVE_FILE)
 
-all : c_element_bvl
+prepare:
+	$(foreach var,$(ALL_SRC), $(HDL) -i --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
+	$(foreach var,$(ALL_SRC), $(HDL) -s --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
+	$(foreach var,$(ALL_SRC), $(HDL) -a --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
+	$(foreach var,$(ALL_ENTITIES), $(HDL) -e --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
+	$(foreach var,$(ALL_ENTITIES), $(HDL) -r --workdir=$(WORKDIR) $(var) $(HDL_RUN_FLAGS) --vcd=$(SIMDIR)$(var).vcd;${\n})
+
+clean_1 :
+	rm -rf $(WORKDIR)*
+
+clean_2 :
+	rm -rf $(SIMDIR)*
+
+clean_all : clean_1 clean_2
+
+all : clean_all prepare c_element_bvl and_gate_bvl

@@ -3,12 +3,10 @@ use ieee.std_logic_1164.all;
 
 package gpapd_pack is
 
-    -- generic (type element_type);
-
     type data_bit_t is record
         t : std_ulogic;
         f : std_ulogic;
-    end record;
+    end record data_bit_t;
 
     constant data_empty   : data_bit_t := (t => '0', f => '0');
     constant data_zero    : data_bit_t := (t => '0', f => '1');

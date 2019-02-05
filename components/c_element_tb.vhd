@@ -10,7 +10,7 @@ entity c_element_tb is
         b_out : out std_ulogic;
         c_in  : in  std_ulogic
     );
-end entity;
+end entity c_element_tb;
 
 architecture test of c_element_tb is
 begin
@@ -69,4 +69,4 @@ begin
         report "Test completed" severity note;
 
     end process;
-end architecture;
+end architecture test;

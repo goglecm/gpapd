@@ -1,9 +1,6 @@
 library work;
 use work.gpapd_pack.all;
 
----------------------------------------
----------------------------------------
-
 entity and_gate_tb is
     port
     (
@@ -12,9 +9,6 @@ entity and_gate_tb is
         c_in : in  data_bit_t
     );
 end entity and_gate_tb;
-
----------------------------------------
----------------------------------------
 
 architecture test of and_gate_tb is
 begin -- architecture test

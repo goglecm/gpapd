@@ -44,4 +44,4 @@ begin
         c_in  => c
     );
 
-end architecture;
+end architecture bench;

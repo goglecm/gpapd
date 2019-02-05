@@ -10,4 +10,4 @@ entity c_element is
         b_in  : in  std_ulogic;
         c_out : out std_ulogic
     );
-end entity;
+end entity c_element;

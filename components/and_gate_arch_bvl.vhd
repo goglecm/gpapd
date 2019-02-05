@@ -29,6 +29,6 @@ begin
         elsif (a_in = data_empty) and (b_in = data_empty) then
             out_state <= data_empty;
         end if;
-    end process;
+    end process main;
 
-end architecture;
+end architecture bvl;

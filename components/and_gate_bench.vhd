@@ -1,10 +1,8 @@
 library work;
 use work.gpapd_pack.all;
 
----------------------------------------
-
 entity and_gate_bench is
-end entity;
+end entity and_gate_bench;
 
 architecture bench of and_gate_bench is
 
@@ -44,4 +42,4 @@ begin
         c_in  => cc
     );
 
-end architecture;
+end architecture bench;

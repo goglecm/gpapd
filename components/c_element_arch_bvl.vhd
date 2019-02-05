@@ -11,4 +11,4 @@ begin
             c_out <= '1';
         end if;
     end process main;
-end architecture;
+end architecture bvl;

@@ -19,6 +19,8 @@ package gpapd_pack is
     constant TB : string := "testbench";
     constant FN : string := "module";
 
+    constant TB_DELAY : time := 1 ns;
+
     function to_str(d : data_bit_t) return string;
     function and_op(a : data_bit_t; b : data_bit_t) return data_bit_t;
 

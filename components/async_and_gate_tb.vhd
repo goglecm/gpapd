@@ -19,47 +19,47 @@ begin
     begin
 
         wait_until(req_in, REQ_VALID);
-        wait for 1 ns;
+        wait for TB_DELAY;
         d0_out <= data_one;
-        wait for 1 ns;
+        wait for TB_DELAY;
         d1_out <= data_zero;
-        wait for 1 ns;
+        wait for TB_DELAY;
         wait_until_is_valid(d0_in);
         assert_eq(d0_in, data_zero);
-        wait for 1 ns;
+        wait for TB_DELAY;
         ack_out <= ACK_VALID;
 
         wait_until(req_in, REQ_EMPTY);
-        wait for 1 ns;
+        wait for TB_DELAY;
         d0_out <= data_empty;
-        wait for 1 ns;
+        wait for TB_DELAY;
         d1_out <= data_empty;
-        wait for 1 ns;
+        wait for TB_DELAY;
         wait_until_is_empty(d0_in);
         assert_eq(d0_in, data_empty);
-        wait for 1 ns;
+        wait for TB_DELAY;
         ack_out <= ACK_EMPTY;
 
         wait_until(req_in, REQ_VALID);
-        wait for 1 ns;
+        wait for TB_DELAY;
         d0_out <= data_one;
-        wait for 1 ns;
+        wait for TB_DELAY;
         d1_out <= data_one;
-        wait for 1 ns;
+        wait for TB_DELAY;
         wait_until_is_valid(d0_in);
         assert_eq(d0_in, data_one);
-        wait for 1 ns;
+        wait for TB_DELAY;
         ack_out <= ACK_VALID;
 
         wait_until(req_in, REQ_EMPTY);
-        wait for 1 ns;
+        wait for TB_DELAY;
         d0_out <= data_empty;
-        wait for 1 ns;
+        wait for TB_DELAY;
         d1_out <= data_empty;
-        wait for 1 ns;
+        wait for TB_DELAY;
         wait_until_is_empty(d0_in);
         assert_eq(d0_in, data_empty);
-        wait for 1 ns;
+        wait for TB_DELAY;
         ack_out <= ACK_EMPTY;
 
         report "Test completed" severity note;

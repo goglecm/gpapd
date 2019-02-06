@@ -15,9 +15,6 @@ begin -- architecture test
 
     main : process
 
-        -- Delay before the assertions.
-        constant DELAY : time := 1 ns;
-
         -- Possible values for one input.
         type data_sequence_t is array (2 downto 0) of data_bit_t;
         variable data : data_sequence_t := (data_empty, data_zero, data_one);
@@ -46,27 +43,27 @@ begin -- architecture test
                 -- Reset.
                 a_out <= data_empty;
                 b_out <= data_empty;
-                wait for DELAY;
+                wait for TB_DELAY;
                 assert_eq(c_in, data_empty);
 
                 -- Half way to valid.
                 a_out <= data(i);
-                wait for DELAY;
+                wait for TB_DELAY;
                 assert_eq(c_in, data_empty);
 
                 -- Valid.
                 b_out <= data(j);
-                wait for DELAY;
+                wait for TB_DELAY;
                 assert_eq(c_in, expected);
 
                 -- Half way to reset.
                 a_out <= data_empty;
-                wait for DELAY;
+                wait for TB_DELAY;
                 assert_eq(c_in, expected);
 
                 -- Reset.
                 b_out <= data_empty;
-                wait for DELAY;
+                wait for TB_DELAY;
                 assert_eq(c_in, data_empty);
 
             end loop;

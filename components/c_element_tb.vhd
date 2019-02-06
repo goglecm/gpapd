@@ -22,51 +22,37 @@ begin
         a_out <= '0';
         b_out <= '0';
         wait for TB_DELAY;
-        assert c_in = '0'
-            report "Expected 0, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '0');
 
         a_out <= '1';
         b_out <= '0';
         wait for TB_DELAY;
-        assert c_in = '0'
-            report "Expected 0, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '0');
 
         a_out <= '0';
         b_out <= '1';
         wait for TB_DELAY;
-        assert c_in = '0'
-            report "Expected 0, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '0');
 
         a_out <= '1';
         b_out <= '1';
         wait for TB_DELAY;
-        assert c_in = '1'
-            report "Expected 1, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '1');
 
         a_out <= '1';
         b_out <= '0';
         wait for TB_DELAY;
-        assert c_in = '1'
-            report "Expected 1, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '1');
 
         a_out <= '0';
         b_out <= '1';
         wait for TB_DELAY;
-        assert c_in = '1'
-            report "Expected 1, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '1');
 
         a_out <= '0';
         b_out <= '0';
         wait for TB_DELAY;
-        assert c_in = '0'
-            report "Expected 0, got " & std_ulogic'image(c_in)
-            severity error;
+        assert_eq(c_in, '0');
 
         report "Test completed" severity note;
 

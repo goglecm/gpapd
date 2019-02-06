@@ -2,7 +2,7 @@ library work;
 use work.gpapd_pack.all;
 
 architecture bvl of and_gate is
-    signal out_state : data_bit_t;
+    signal out_state : data_bit_t := data_empty;
 begin
 
     c_out <= out_state;

@@ -29,6 +29,8 @@ package gpapd_pack is
     procedure assert_eq(signal actual : ack_t; expected : ack_t);
     procedure assert_eq(signal actual : req_t; expected : req_t);
 
+    procedure assert_neq(signal actual : data_bit_t; not_expected : data_bit_t);
+
     function is_valid(signal data : data_bit_t) return boolean;
     function is_valid(signal d1 : data_bit_t; signal d2 : data_bit_t) return boolean;
     function is_empty(signal data : data_bit_t) return boolean;
@@ -90,6 +92,13 @@ package body gpapd_pack is
                    ", got " & req_t'image(actual)
                 severity error;
     end procedure assert_eq;
+
+    procedure assert_neq(signal actual : data_bit_t; not_expected : data_bit_t) is
+    begin
+        assert actual /= not_expected
+            report "Unexpected" & to_str(actual)
+                severity error;
+    end procedure assert_neq;
 
     function is_valid(signal data : data_bit_t) return boolean is
     begin

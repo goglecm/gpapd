@@ -10,13 +10,8 @@ begin
     main : process(a_in, b_in)
     begin
 
-        assert a_in /= data_invalid
-            report "Invalid data on input a"
-                severity error;
-
-        assert b_in /= data_invalid
-            report "Invalid data on input b"
-                severity error;
+        assert_neq(a_in, data_invalid);
+        assert_neq(b_in, data_invalid);
 
         if (a_in = data_one) and (b_in = data_one) and (out_state = data_empty) then
             out_state <= data_one;
@@ -29,6 +24,7 @@ begin
         elsif (a_in = data_empty) and (b_in = data_empty) then
             out_state <= data_empty;
         end if;
+
     end process main;
 
 end architecture bvl;

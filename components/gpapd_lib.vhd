@@ -40,8 +40,13 @@ package gpapd_pack is
     procedure assert_neq(signal actual : data_bit_t; not_expected : data_bit_t);
     procedure assert_neq_var(actual : data_bit_t; not_expected : data_bit_t);
 
+    function is_valid_var(data : data_bit_t) return boolean;
+
     function is_valid(signal data : data_bit_t) return boolean;
     function is_valid(signal d1 : data_bit_t; signal d2 : data_bit_t) return boolean;
+
+    function is_empty_var(data : data_bit_t) return boolean;
+
     function is_empty(signal data : data_bit_t) return boolean;
     function is_empty(signal d1 : data_bit_t; signal d2 : data_bit_t) return boolean;
 
@@ -49,7 +54,9 @@ package gpapd_pack is
     procedure wait_until(signal data : ack_t; value : ack_t);
     procedure wait_until(signal data : req_t; value : req_t);
     procedure wait_until_is_valid(signal data : data_bit_t);
+    procedure wait_until_is_valid(signal data : data_vector_t);
     procedure wait_until_is_empty(signal data : data_bit_t);
+    procedure wait_until_is_empty(signal data : data_vector_t);
 
     procedure log(module_name : string; message : string);
 
@@ -213,6 +220,23 @@ package body gpapd_pack is
         return (data = data_one) or (data = data_zero);
     end function is_valid;
 
+    function is_valid_var(data : data_bit_t) return boolean is
+    begin
+        return (data = data_one) or (data = data_zero);
+    end function is_valid_var;
+
+    function is_valid(signal data : data_vector_t) return boolean is
+        variable data_copy : data_vector_t(data'length - 1 downto 0) := data;
+    begin
+        for i in data_copy'length - 1 downto 0 loop
+            if not is_valid_var(data_copy(i)) then
+                return false;
+            end if;
+        end loop;
+
+        return true;
+    end function is_valid;
+
     function is_valid(signal d1 : data_bit_t; signal d2 : data_bit_t) return boolean is
     begin
         return is_valid(d1) and is_valid(d2);
@@ -221,6 +245,18 @@ package body gpapd_pack is
     function is_empty(signal data : data_bit_t) return boolean is
     begin
         return data = data_empty;
+    end function is_empty;
+
+    function is_empty_var(data : data_bit_t) return boolean is
+    begin
+        return data = data_empty;
+    end function is_empty_var;
+
+    function is_empty(signal data : data_vector_t) return boolean is
+        variable all_zeros :
+            data_vector_t(data'length - 1 downto 0) := (others => data_empty);
+    begin
+        return data = all_zeros;
     end function is_empty;
 
     function is_empty(signal d1 : data_bit_t; signal d2 : data_bit_t) return boolean is
@@ -256,7 +292,21 @@ package body gpapd_pack is
         end if;
     end procedure wait_until_is_valid;
 
+    procedure wait_until_is_valid(signal data : data_vector_t) is
+    begin
+        if (not is_valid(data)) then
+            wait until is_valid(data);
+        end if;
+    end procedure wait_until_is_valid;
+
     procedure wait_until_is_empty(signal data : data_bit_t) is
+    begin
+        if (not is_empty(data)) then
+            wait until is_empty(data);
+        end if;
+    end procedure wait_until_is_empty;
+
+    procedure wait_until_is_empty(signal data : data_vector_t) is
     begin
         if (not is_empty(data)) then
             wait until is_empty(data);

@@ -34,9 +34,13 @@ begin
 
         if (ack_in = ACK_EMPTY) then
             req_out <= REQ_VALID;
+            wait_until_is_valid(d0_in_line);
+            wait_until_is_valid(d1_in_line);
             wait_until(ack_in, ACK_VALID);
         elsif (ack_in = ACK_VALID) then
             req_out <= REQ_EMPTY;
+            wait_until_is_empty(d0_in_line);
+            wait_until_is_empty(d1_in_line);
             wait_until(ack_in, ACK_EMPTY);
         end if;
 

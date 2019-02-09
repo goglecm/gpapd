@@ -62,7 +62,7 @@ begin
         wait for TB_DELAY;
         ack_out <= ACK_EMPTY;
 
-        report "Test completed" severity note;
+        report_completion;
 
     end process main;
 

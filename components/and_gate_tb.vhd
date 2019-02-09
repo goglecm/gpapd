@@ -69,7 +69,7 @@ begin -- architecture test
             end loop;
         end loop;
 
-        report "Test completed" severity note;
+        report_completion;
 
     end process main;
 

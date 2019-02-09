@@ -54,7 +54,7 @@ begin
         wait for TB_DELAY;
         assert_eq(c_in, '0');
 
-        report "Test completed" severity note;
+        report_completion;
 
     end process;
 end architecture test;

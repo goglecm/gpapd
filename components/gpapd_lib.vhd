@@ -333,6 +333,7 @@ package body gpapd_pack is
     procedure report_completion is
     begin
         report "Test completed" severity note;
+        wait;
     end procedure report_completion;
 
 end gpapd_pack;

@@ -1,15 +1,63 @@
-define \n
-
-
-endef
+### BINS ###
 
 HDL = ghdl
 WAVEVIEWER = gtkwave
 
+### END BINS ###
+
+### PATHS ###
+
 WORKDIR = work/
 LIBDIR = libs/
 SIMDIR = sim/
-COMPONENTSDIR = components/
+
+SRCCOMPONENTSDIR = src/components/
+SRCPACKSDIR = src/packages/
+
+### END PATHS ###
+
+### SOURCES ###
+
+LIBRARY_SRC = \
+	$(SRCPACKSDIR)gpapd_pack.vhd
+
+ENTITY_SRC = \
+	$(SRCCOMPONENTSDIR)c_element_ent.vhd \
+	$(SRCCOMPONENTSDIR)and_gate_ent.vhd \
+	$(SRCCOMPONENTSDIR)param_2_in_and_gate_ent.vhd \
+	$(SRCCOMPONENTSDIR)async_param_2_in_and_gate_ent.vhd \
+	$(SRCCOMPONENTSDIR)async_and_gate_ent.vhd \
+
+ARCH_SRC = \
+	$(SRCCOMPONENTSDIR)c_element_arch_bvl.vhd \
+	$(SRCCOMPONENTSDIR)and_gate_arch_bvl.vhd \
+	$(SRCCOMPONENTSDIR)param_2_in_and_gate_arch_bvl.vhd \
+	$(SRCCOMPONENTSDIR)async_param_2_in_and_gate_arch_bvl.vhd \
+	$(SRCCOMPONENTSDIR)async_and_gate_arch_bvl.vhd \
+
+TB_SRC = \
+	$(SRCCOMPONENTSDIR)c_element_tb.vhd \
+	$(SRCCOMPONENTSDIR)and_gate_tb.vhd \
+	$(SRCCOMPONENTSDIR)param_2_in_and_gate_tb.vhd \
+	$(SRCCOMPONENTSDIR)async_param_2_in_and_gate_tb.vhd \
+	$(SRCCOMPONENTSDIR)async_and_gate_tb.vhd \
+
+BENCH_SRC = \
+	$(SRCCOMPONENTSDIR)c_element_bench.vhd \
+	$(SRCCOMPONENTSDIR)and_gate_bench.vhd \
+	$(SRCCOMPONENTSDIR)param_2_in_and_gate_bench.vhd \
+	$(SRCCOMPONENTSDIR)async_param_2_in_and_gate_bench.vhd \
+	$(SRCCOMPONENTSDIR)async_and_gate_bench.vhd \
+
+ALL_SRC = \
+	$(ENTITY_SRC) \
+	$(ARCH_SRC) \
+	$(TB_SRC) \
+	$(BENCH_SRC) \
+
+### END SOURCES ###
+
+### FLAGS ###
 
 ALL_WAVEVIEWER_FLAGS = \
 	-c 8 \
@@ -35,43 +83,9 @@ ANALYSIS_HDL_FLAGS = \
 	$(GENERAL_HDL_FLAGS) \
 	#--std=02 \
 
-LIBRARY_SRC = \
-	$(COMPONENTSDIR)gpapd_lib.vhd
+### END FLAGS ###
 
-ENTITY_SRC = \
-	$(COMPONENTSDIR)c_element_ent.vhd \
-	$(COMPONENTSDIR)and_gate_ent.vhd \
-	$(COMPONENTSDIR)param_2_in_and_gate_ent.vhd \
-	$(COMPONENTSDIR)async_param_2_in_and_gate_ent.vhd \
-	$(COMPONENTSDIR)async_and_gate_ent.vhd \
-
-ARCH_SRC = \
-	$(COMPONENTSDIR)c_element_arch_bvl.vhd \
-	$(COMPONENTSDIR)and_gate_arch_bvl.vhd \
-	$(COMPONENTSDIR)param_2_in_and_gate_arch_bvl.vhd \
-	$(COMPONENTSDIR)async_param_2_in_and_gate_arch_bvl.vhd \
-	$(COMPONENTSDIR)async_and_gate_arch_bvl.vhd \
-
-TB_SRC = \
-	$(COMPONENTSDIR)c_element_tb.vhd \
-	$(COMPONENTSDIR)and_gate_tb.vhd \
-	$(COMPONENTSDIR)param_2_in_and_gate_tb.vhd \
-	$(COMPONENTSDIR)async_param_2_in_and_gate_tb.vhd \
-	$(COMPONENTSDIR)async_and_gate_tb.vhd \
-
-BENCH_SRC = \
-	$(COMPONENTSDIR)c_element_bench.vhd \
-	$(COMPONENTSDIR)and_gate_bench.vhd \
-	$(COMPONENTSDIR)param_2_in_and_gate_bench.vhd \
-	$(COMPONENTSDIR)async_param_2_in_and_gate_bench.vhd \
-	$(COMPONENTSDIR)async_and_gate_bench.vhd \
-
-ALL_SRC = \
-	$(ENTITY_SRC) \
-	$(ARCH_SRC) \
-	$(TB_SRC) \
-	$(BENCH_SRC) \
-
+### MISC ###
 ALL_ENTITIES = \
 	c_element_bench \
 	and_gate_bench \
@@ -79,13 +93,24 @@ ALL_ENTITIES = \
 	async_param_2_in_and_gate_bench \
 	async_and_gate_bench \
 
+define \n
+
+
+endef
+
+### END MISC ###
+
 .PHONY : clean all run prepare_libraries prepare_sources
+
+### WAVEVIEWER TARGETS ###
 
 c_element_bvl :
 	# $(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)$(C_ELEMENT_WAVE_FILE)
 
 and_gate_bvl :
 	# $(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)$(AND_GATE_WAVE_FILE)
+
+### LIBRARY TARGETS ###
 
 import_libraries:
 	$(foreach var,$(LIBRARY_SRC), $(HDL) -i $(HDL_LIBS_FLAGS) $(GENERAL_HDL_FLAGS) $(var);${\n})
@@ -100,6 +125,8 @@ prepare_libraries:
 	make -j import_libraries
 	make -j check_libraries
 	make -j analyse_libraries
+
+### SOURCE TARGETS ###
 
 import_sources:
 	$(foreach var,$(ALL_SRC), $(HDL) -i $(ANALYSIS_HDL_FLAGS) $(var);${\n})
@@ -118,6 +145,8 @@ prepare_sources:
 run:
 	$(foreach var,$(ALL_ENTITIES), $(HDL) --elab-run $(ANALYSIS_HDL_FLAGS) $(var) $(HDL_RUN_FLAGS)--vcd=$(SIMDIR)$(var).vcd;${\n})
 
+### CLEANUP TARGETS ###
+
 clean_1 :
 	rm -rf $(WORKDIR)*
 
@@ -128,6 +157,8 @@ clean_3 :
 	rm -rf $(LIBDIR)*
 
 clean : clean_1 clean_2 clean_3
+
+### TOP TARGETS ###
 
 main_target:
 	make -j clean

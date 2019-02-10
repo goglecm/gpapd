@@ -1,5 +1,5 @@
-library work;
-use work.gpapd_pack.all;
+library gpapd_lib;
+use gpapd_lib.gpapd_pack.all;
 
 architecture bvl of async_and_gate is
 

@@ -1,5 +1,5 @@
-library work;
-use work.gpapd_pack.all;
+library gpapd_lib;
+use gpapd_lib.gpapd_pack.all;
 
 entity async_param_2_in_and_gate_bench is
     generic

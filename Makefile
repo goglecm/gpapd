@@ -7,20 +7,32 @@ HDL = ghdl
 WAVEVIEWER = gtkwave
 
 WORKDIR = work/
+LIBDIR = libs/
 SIMDIR = sim/
 COMPONENTSDIR = components/
 
 ALL_WAVEVIEWER_FLAGS = \
 	-c 8 \
 
+HDL_LIBS_FLAGS = \
+	--work=gpapd_lib \
+	--workdir=$(LIBDIR) \
+
+GENERAL_HDL_FLAGS = \
+	-O3 \
+	-g3 \
+
 HDL_RUN_FLAGS = \
-	--assert-level=error \
 	--stop-delta=5000 \
 	--stop-time=100ns \
+	--assert-level=error \
 	#--stats \
 	#--disp-time
 
-ALL_HDL_FLAGS = \
+ANALYSIS_HDL_FLAGS = \
+	--workdir=$(WORKDIR) \
+	-P$(LIBDIR) \
+	$(GENERAL_HDL_FLAGS) \
 	#--std=02 \
 
 LIBRARY_SRC = \
@@ -55,7 +67,6 @@ BENCH_SRC = \
 	$(COMPONENTSDIR)async_and_gate_bench.vhd \
 
 ALL_SRC = \
-	$(LIBRARY_SRC) \
 	$(ENTITY_SRC) \
 	$(ARCH_SRC) \
 	$(TB_SRC) \
@@ -68,7 +79,7 @@ ALL_ENTITIES = \
 	async_param_2_in_and_gate_bench \
 	async_and_gate_bench \
 
-.PHONY : clean all c_element_bvl and_gate_bvl
+.PHONY : clean all run prepare_libraries prepare_sources
 
 c_element_bvl :
 	# $(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)$(C_ELEMENT_WAVE_FILE)
@@ -76,12 +87,36 @@ c_element_bvl :
 and_gate_bvl :
 	# $(WAVEVIEWER) $(ALL_WAVEVIEWER_FLAGS) $(SIMDIR)$(AND_GATE_WAVE_FILE)
 
-prepare:
-	$(foreach var,$(ALL_SRC), $(HDL) -i --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
-	$(foreach var,$(ALL_SRC), $(HDL) -s --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
-	$(foreach var,$(ALL_SRC), $(HDL) -a --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
-	$(foreach var,$(ALL_ENTITIES), $(HDL) -e --workdir=$(WORKDIR) $(ALL_HDL_FLAGS) $(var);${\n})
-	$(foreach var,$(ALL_ENTITIES), $(HDL) -r --workdir=$(WORKDIR) $(var) $(HDL_RUN_FLAGS) --vcd=$(SIMDIR)$(var).vcd;${\n})
+import_libraries:
+	$(foreach var,$(LIBRARY_SRC), $(HDL) -i $(HDL_LIBS_FLAGS) $(GENERAL_HDL_FLAGS) $(var);${\n})
+
+check_libraries:
+	$(foreach var,$(LIBRARY_SRC), $(HDL) -s $(HDL_LIBS_FLAGS) $(GENERAL_HDL_FLAGS) $(var);${\n})
+
+analyse_libraries:
+	$(foreach var,$(LIBRARY_SRC), $(HDL) -a $(HDL_LIBS_FLAGS) $(GENERAL_HDL_FLAGS) $(var);${\n})
+
+prepare_libraries:
+	make -j import_libraries
+	make -j check_libraries
+	make -j analyse_libraries
+
+import_sources:
+	$(foreach var,$(ALL_SRC), $(HDL) -i $(ANALYSIS_HDL_FLAGS) $(var);${\n})
+
+check_sources:
+	$(foreach var,$(ALL_SRC), $(HDL) -s $(ANALYSIS_HDL_FLAGS) $(var);${\n})
+
+analyse_sources:
+	$(foreach var,$(ALL_SRC), $(HDL) -a $(ANALYSIS_HDL_FLAGS) $(var);${\n})
+
+prepare_sources:
+	make -j import_sources
+	make -j check_sources
+	make -j analyse_sources
+
+run:
+	$(foreach var,$(ALL_ENTITIES), $(HDL) --elab-run $(ANALYSIS_HDL_FLAGS) $(var) $(HDL_RUN_FLAGS)--vcd=$(SIMDIR)$(var).vcd;${\n})
 
 clean_1 :
 	rm -rf $(WORKDIR)*
@@ -89,6 +124,16 @@ clean_1 :
 clean_2 :
 	rm -rf $(SIMDIR)*
 
-clean_all : clean_1 clean_2
+clean_3 :
+	rm -rf $(LIBDIR)*
 
-all : clean_all prepare c_element_bvl and_gate_bvl
+clean : clean_1 clean_2 clean_3
+
+main_target:
+	make -j clean
+	make prepare_libraries
+	make prepare_sources
+	make -j run
+
+all :
+	make main_target

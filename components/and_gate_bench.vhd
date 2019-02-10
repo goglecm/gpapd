@@ -1,5 +1,5 @@
-library work;
-use work.gpapd_pack.all;
+library gpapd_lib;
+use gpapd_lib.gpapd_pack.all;
 
 entity and_gate_bench is
 end entity and_gate_bench;

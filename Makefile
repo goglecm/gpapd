@@ -30,24 +30,28 @@ ENTITY_SRC = \
 	$(COMPONENTSDIR)c_element_ent.vhd \
 	$(COMPONENTSDIR)and_gate_ent.vhd \
 	$(COMPONENTSDIR)param_2_in_and_gate_ent.vhd \
+	$(COMPONENTSDIR)async_param_2_in_and_gate_ent.vhd \
 	$(COMPONENTSDIR)async_and_gate_ent.vhd \
 
 ARCH_SRC = \
 	$(COMPONENTSDIR)c_element_arch_bvl.vhd \
 	$(COMPONENTSDIR)and_gate_arch_bvl.vhd \
 	$(COMPONENTSDIR)param_2_in_and_gate_arch_bvl.vhd \
+	$(COMPONENTSDIR)async_param_2_in_and_gate_arch_bvl.vhd \
 	$(COMPONENTSDIR)async_and_gate_arch_bvl.vhd \
 
 TB_SRC = \
 	$(COMPONENTSDIR)c_element_tb.vhd \
 	$(COMPONENTSDIR)and_gate_tb.vhd \
 	$(COMPONENTSDIR)param_2_in_and_gate_tb.vhd \
+	$(COMPONENTSDIR)async_param_2_in_and_gate_tb.vhd \
 	$(COMPONENTSDIR)async_and_gate_tb.vhd \
 
 BENCH_SRC = \
 	$(COMPONENTSDIR)c_element_bench.vhd \
 	$(COMPONENTSDIR)and_gate_bench.vhd \
 	$(COMPONENTSDIR)param_2_in_and_gate_bench.vhd \
+	$(COMPONENTSDIR)async_param_2_in_and_gate_bench.vhd \
 	$(COMPONENTSDIR)async_and_gate_bench.vhd \
 
 ALL_SRC = \
@@ -61,6 +65,7 @@ ALL_ENTITIES = \
 	c_element_bench \
 	and_gate_bench \
 	param_2_in_and_gate_bench \
+	async_param_2_in_and_gate_bench \
 	async_and_gate_bench \
 
 .PHONY : clean all c_element_bvl and_gate_bvl

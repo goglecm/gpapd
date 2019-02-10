@@ -4,7 +4,7 @@ use work.gpapd_pack.all;
 entity param_2_in_and_gate_bench is
     generic
     (
-        WORD_LEN_DEGREE : integer := 6
+        WORD_LEN_DEGREE : natural := 6
     );
 end entity;
 
@@ -12,7 +12,7 @@ architecture bench of param_2_in_and_gate_bench is
     component param_2_in_and_gate
     generic
     (
-        WORD_LEN_DEGREE : integer
+        WORD_LEN_DEGREE : natural
     );
     port
     (
@@ -25,7 +25,7 @@ architecture bench of param_2_in_and_gate_bench is
     component param_2_in_and_gate_tb
     generic
     (
-        WORD_LEN_DEGREE : integer
+        WORD_LEN_DEGREE : natural
     );
     port
     (

@@ -4,7 +4,7 @@ use work.gpapd_pack.all;
 entity param_2_in_and_gate_tb is
     generic
     (
-        WORD_LEN_DEGREE : integer
+        WORD_LEN_DEGREE : natural
     );
 	port
     (

@@ -85,6 +85,13 @@ ANALYSIS_HDL_FLAGS = \
 
 ### END FLAGS ###
 
+### CONDITIONALS ###
+# To disable, do not set it to anything, otherwise set it to something.
+
+ENABLE_WAVEVIEWER = #true
+
+### END CONDITIONALS ###
+
 ### MISC ###
 ALL_ENTITIES = \
 	c_element_bench \
@@ -143,7 +150,9 @@ prepare_sources:
 	make -j analyse_sources
 
 run:
-	$(foreach var,$(ALL_ENTITIES), $(HDL) --elab-run $(ANALYSIS_HDL_FLAGS) $(var) $(HDL_RUN_FLAGS)--vcd=$(SIMDIR)$(var).vcd;${\n})
+	$(foreach var,$(ALL_ENTITIES), \
+	$(HDL) --elab-run $(ANALYSIS_HDL_FLAGS) $(var) $(HDL_RUN_FLAGS) \
+	$(if $(ENABLE_WAVEVIEWER),--vcd=$(SIMDIR)$(var).vcd);${\n})
 
 ### CLEANUP TARGETS ###
 

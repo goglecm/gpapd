@@ -11,7 +11,6 @@ package gpapd_pack is
     type data_vector_t is array (integer range <>) of data_bit_t;
 
     type ack_t is (ACK_EMPTY, ACK_VALID, ACK_INVALID);
-    type req_t is (REQ_EMPTY, REQ_VALID, REQ_INVALID);
 
     constant data_empty   : data_bit_t := (t => '0', f => '0');
     constant data_zero    : data_bit_t := (t => '0', f => '1');
@@ -31,7 +30,6 @@ package gpapd_pack is
     procedure assert_eq(signal actual : data_bit_t; expected : data_bit_t);
     procedure assert_eq(signal actual : std_ulogic; expected : std_ulogic);
     procedure assert_eq(signal actual : ack_t; expected : ack_t);
-    procedure assert_eq(signal actual : req_t; expected : req_t);
     procedure assert_eq(signal data : data_vector_t; expected : data_bit_t);
     procedure assert_eq(signal data : data_vector_t; expected : data_vector_t);
 
@@ -52,7 +50,6 @@ package gpapd_pack is
 
     procedure wait_until(signal data : data_bit_t; value : data_bit_t);
     procedure wait_until(signal data : ack_t; value : ack_t);
-    procedure wait_until(signal data : req_t; value : req_t);
     procedure wait_until_is_valid(signal data : data_bit_t);
     procedure wait_until_is_valid(signal data : data_vector_t);
     procedure wait_until_is_empty(signal data : data_bit_t);
@@ -173,14 +170,6 @@ package body gpapd_pack is
                 severity error;
     end procedure assert_eq;
 
-    procedure assert_eq(signal actual : req_t; expected : req_t) is
-    begin
-        assert actual = expected
-            report "Expected " & req_t'image(expected) &
-                   ", got " & req_t'image(actual)
-                severity error;
-    end procedure assert_eq;
-
     procedure assert_eq(signal data : data_vector_t; expected : data_bit_t) is
         variable actual_vector : data_vector_t(data'length - 1 downto 0) := data;
         variable expected_vector :
@@ -272,13 +261,6 @@ package body gpapd_pack is
     end procedure wait_until;
 
     procedure wait_until(signal data : ack_t; value : ack_t) is
-    begin
-        if (data /= value) then
-            wait until data = value;
-        end if;
-    end procedure wait_until;
-
-    procedure wait_until(signal data : req_t; value : req_t) is
     begin
         if (data /= value) then
             wait until data = value;

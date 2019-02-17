@@ -81,7 +81,7 @@ ANALYSIS_HDL_FLAGS = \
 	--workdir=$(WORKDIR) \
 	-P$(LIBDIR) \
 	$(GENERAL_HDL_FLAGS) \
-	#--std=02 \
+	# --std=93 \
 
 ### END FLAGS ###
 

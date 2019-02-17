@@ -7,8 +7,7 @@ entity async_and_gate_tb is
         d0_out  : out  data_bit_t;
         d1_out  : out  data_bit_t;
         d0_in   : in data_bit_t;
-        ack_out : out ack_t;
-        req_in  : in req_t
+        ack_out : out ack_t
     );
 end entity;
 
@@ -18,8 +17,6 @@ begin
     main : process
     begin
 
-        wait_until(req_in, REQ_VALID);
-        wait for TB_DELAY;
         d0_out <= data_one;
         wait for TB_DELAY;
         d1_out <= data_zero;
@@ -29,8 +26,6 @@ begin
         wait for TB_DELAY;
         ack_out <= ACK_VALID;
 
-        wait_until(req_in, REQ_EMPTY);
-        wait for TB_DELAY;
         d0_out <= data_empty;
         wait for TB_DELAY;
         d1_out <= data_empty;
@@ -40,8 +35,6 @@ begin
         wait for TB_DELAY;
         ack_out <= ACK_EMPTY;
 
-        wait_until(req_in, REQ_VALID);
-        wait for TB_DELAY;
         d0_out <= data_one;
         wait for TB_DELAY;
         d1_out <= data_one;
@@ -51,8 +44,6 @@ begin
         wait for TB_DELAY;
         ack_out <= ACK_VALID;
 
-        wait_until(req_in, REQ_EMPTY);
-        wait for TB_DELAY;
         d0_out <= data_empty;
         wait for TB_DELAY;
         d1_out <= data_empty;

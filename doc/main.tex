@@ -313,11 +313,11 @@ communicates with exactly one other process. Also no deadlocks can occur.
 \begin{table}[H]
     \centering
     \begin{tabular}{ r c l }
-        process interconnect & \rightarrow & simple \\
-        data flow            & \rightarrow & simple \\
-        performance          & \rightarrow & low \\
-        circuit size         & \rightarrow & small \\
-        deadlock chance      & \rightarrow & not possible \\
+        process interconnect & $\rightarrow$ & simple \\
+        data flow            & $\rightarrow$ & simple \\
+        performance          & $\rightarrow$ & low \\
+        circuit size         & $\rightarrow$ & small \\
+        deadlock chance      & $\rightarrow$ & not possible \\
     \end{tabular}
 \end{table}
 
@@ -368,11 +368,11 @@ communicates with multiple processes.
 \begin{table}[H]
     \centering
     \begin{tabular}{ r c l }
-        process interconnect & \rightarrow & complex \\
-        data flow            & \rightarrow & simple \\
-        performance          & \rightarrow & low \\
-        circuit size         & \rightarrow & large \\
-        deadlock chance      & \rightarrow & possible unless probing is used \\
+        process interconnect & $\rightarrow$ & complex \\
+        data flow            & $\rightarrow$ & simple \\
+        performance          & $\rightarrow$ & low \\
+        circuit size         & $\rightarrow$ & large \\
+        deadlock chance      & $\rightarrow$ & possible unless probing is used \\
     \end{tabular}
 \end{table}
 
@@ -465,7 +465,7 @@ units are communicated over multiple channels at any time.
 This is the most complex type of communication as an arbitrary number of data
 units can be communicated over an arbitrary number of channels at any time.
 
-\begin{definition}{\textbf{Parallel transaction}
+\begin{definition}{\textbf{Parallel transaction}}
     A set of data units sent over a multiple channels at once.
 \end{definition}
 
@@ -476,11 +476,11 @@ consumers.
 \begin{table}[H]
     \centering
     \begin{tabular}{ r c l }
-        process interconnect & \rightarrow & complex \\
-        data flow            & \rightarrow & complex \\
-        performance          & \rightarrow & high \\
-        circuit size         & \rightarrow & large \\
-        deadlock chance      & \rightarrow & possible unless probing is used \\
+        process interconnect & $\rightarrow$ & complex \\
+        data flow            & $\rightarrow$ & complex \\
+        performance          & $\rightarrow$ & high \\
+        circuit size         & $\rightarrow$ & large \\
+        deadlock chance      & $\rightarrow$ & possible unless probing is used \\
     \end{tabular}
 \end{table}
 
@@ -495,9 +495,28 @@ communicate some data on multiple channels at once.
 
 The producer sends all the data units at any time all at once and will only send
 more data units once the previous units have been successfully received by the
-consumer. It is called strongly indicating as the producer has to wait for all
-the sent data to be fully consumed before it can send any further data on
-possibly other channels.
+consumer as shown in Listing \ref{lst:strong-parallel-producer}. The producer
+send data over channels 0 and 1 in parallel. It then waits for the transaction
+to finish before sending data over channels 2 and 0 in parallel.
+
+It is called strongly indicating as the producer has to wait for all the sent
+data to be fully consumed before it can send any further data on possibly other
+channels.
+
+\begin{lstlisting} [caption = {Strongly indicating parallel channel producer},
+                    style   = mainVHDL,
+                    label   = {lst:strong-parallel-producer}]
+producer : process
+begin
+    wait for delay(5, 10);
+    send(channel0, data0,
+         channel1, data1);
+
+    wait for delay(5, 10);
+    send(channel2, data2,
+         channel0, data0);
+end process consumer;
+\end{lstlisting}
 
 \subsubsection{Weakly indicating parallel communication}
 
@@ -508,14 +527,99 @@ the producer can send more data on channels 0, 1 and possibly other channels but
 not channel 2. It is called weakly indicating as only a part of the complex
 transaction needs to be completed before the next transaction may start.
 
+Good designs should not lead to this type of producer as it hides too many
+details to be fully specified in VHDL. For instance, the send procedure should
+terminate before continuing. Instead multiple strongly indicating producer
+processes should be devised.
+
 \subsection{Consumer}
 
 The consumer may naively just probe each channel and receive data on the
 channels with available data. To fully exploit the parallelism advantages, the
 consumer should know at any time which producer is sending parallel data on
 which channels and them receive that data in parallel. In such case, the
-consumer should skip probing and begin receiving data on those channels.
+consumer should skip probing and begin receiving data on those channels, as
+shown in Listing \ref{lst:parallel-consumer}.
+
+\begin{lstlisting} [caption = {Parallel channel consumer},
+                    style   = mainVHDL,
+                    label   = {lst:parallel-consumer}]
+consumer : process
+begin
+    receive(channel0, data0,
+            channel1, data1);
+    wait for delay(5, 10);
+
+    receive(channel2, data2,
+            channel0, data0);
+    wait for delay(5, 10);
+end process consumer;
+\end{lstlisting}
 
 \section{Multistage data flow}
+
+Thus far only single stage data flows have been discussed. A data flow is the
+aggregate number of channels between 2 processes, forming a single stage. The
+channels between the second and the next process form a second data flow stage,
+as shown in Figure \ref{fig:multistage-dataflow}.
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    % Blocks
+    \node [block] (producer1) {producer 1};
+    \node [block, right of=producer1, node distance=5cm] (consumer1) {consumer 1};
+    \node [block, right of=consumer1, node distance=5cm] (producer2) {producer 2};
+
+    % Draw edges
+    % Stage 1
+    \path [arrow]
+    ([yshift = 0.5cm] producer1.east)
+    -- node [midway,above] { channel 1 }
+    ([yshift = 0.5cm] consumer1.west);
+
+    \path [arrow]
+    (producer.east)
+    -- node [midway,above] { channel 2 }
+    (consumer.west);
+
+    \path [arrow]
+    ([yshift = -0.5cm] producer1.east)
+    -- node [midway,above] { channel 3}
+    ([yshift = -0.5cm] consumer1.west);
+
+    % Stage 2
+    \path [arrow]
+    ([yshift = 0.5cm] consumer1.east)
+    -- node [midway,above] { channel 1 }
+    ([yshift = 0.5cm] producer2.west);
+
+    \path [arrow]
+    (consumer1.east)
+    -- node [midway,above] { channel 2 }
+    (producer2.west);
+
+    \path [arrow]
+    ([yshift = -0.5cm] consumer1.east)
+    -- node [midway,above] { channel 3}
+    ([yshift = -0.5cm] producer2.west);
+
+    % Stages
+    \path
+    ([yshift = 1.2cm] producer1.east)
+    -- node [midway,above] { \textbf{STAGE 1}}
+    ([yshift = 1.2cm] consumer1.west);
+
+    \path
+    ([yshift = 1.2cm] consumer1.east)
+    -- node [midway,above] { \textbf{STAGE 2}}
+    ([yshift = 1.2cm] producer2.west);
+
+\end{tikzpicture}
+\caption {Double stage data flow.}
+\label {fig:multistage-dataflow}
+\end {figure}
+
 
 \end{document}

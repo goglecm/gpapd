@@ -11,7 +11,7 @@
 % Define block styles
 
 \tikzstyle{block} = [rectangle, draw, text centered, rounded corners,
-    text width=5em, minimum height=4em]
+    minimum height=4em]
 \tikzstyle{arrow} = [draw, -latex]
 
 \lstdefinestyle{mainVHDL}
@@ -569,8 +569,8 @@ as shown in Figure \ref{fig:multistage-dataflow}.
 
     % Blocks
     \node [block] (producer1) {producer 1};
-    \node [block, right of=producer1, node distance=5cm] (consumer1) {consumer 1};
-    \node [block, right of=consumer1, node distance=5cm] (producer2) {producer 2};
+    \node [block, right of=producer1, node distance=5cm] (consumer1) {consumer/producer};
+    \node [block, right of=consumer1, node distance=5cm] (producer2) {consumer 1};
 
     % Draw edges
     % Stage 1
@@ -580,9 +580,9 @@ as shown in Figure \ref{fig:multistage-dataflow}.
     ([yshift = 0.5cm] consumer1.west);
 
     \path [arrow]
-    (producer.east)
+    (producer1.east)
     -- node [midway,above] { channel 2 }
-    (consumer.west);
+    (consumer1.west);
 
     \path [arrow]
     ([yshift = -0.5cm] producer1.east)
@@ -621,5 +621,54 @@ as shown in Figure \ref{fig:multistage-dataflow}.
 \label {fig:multistage-dataflow}
 \end {figure}
 
+\section{Process specification}
+
+A process has the following elements:
+
+\begin{itemize}
+    \item{Type: producer, consumer or both}
+    \item{State: internal signals which are possibly read and set for each
+        input}
+    \item{Logic: a logic or arithmetic (or both) block which operates on the
+        input signals and the internal signals, much like a state machine}
+\end{itemize}
+
+Start point and end point processes are either producers or consumers but not
+both. Usually a process behaves like a state machine, transforming the input
+signals and internal signals into output signals.
+
+\section{Complete specification}
+
+There may be a hierarchy of static and dynamic block diagrams. Blocks in the
+upper levels of the hierarchy contain a subset of blocks from a lower level in
+the hierarchy.
+
+The channel model diagrams and specifications are only done for the blocks at
+the lowest level in the hierarchy as only at that level there is sufficient
+detail.
+
+\subsection{Diagrams}
+
+\subsubsection{Static diagrams}
+
+A block diagram describes the main processes and the main data flow between
+them.
+A channel diagram describes all processes and all the channels between them.
+
+\subsubsection{Dynamic diagrams}
+
+These also include block and channel diagrams, however, rather than only showing
+the channels between the processes, they also describe which channels and which
+processes are used for specific inputs (such as instructions, control signals,
+etc.).
+
+\subsection{Specifications}
+
+A channel model specification describes (using VHDL) the connection between all
+processes (represented as components in VHDL) based on the static channel
+diagram.
+
+The process specification describes (using VHDL) each process' elements based on
+the dynamic channel diagram.
 
 \end{document}

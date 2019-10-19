@@ -671,4 +671,144 @@ diagram.
 The process specification describes (using VHDL) each process' elements based on
 the dynamic channel diagram.
 
+\chapter{Process architecture}
+
+\section{Background}
+
+The dataflow through a processor consists of 3 stages, as shown in Figure
+\ref{fig:processor-dataflow-stages}:
+
+\begin{itemize}
+
+\item Data and instruction fetch
+\item Instruction decoding
+\item Instruction execution
+
+\end{itemize}
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    % Blocks
+    \node [block] (fetch) {Fetch};
+    \node [block, right of=fetch, node distance=2cm] (decode) {Decode};
+    \node [block, right of=decode, node distance=2cm] (execute) {Execute};
+
+    % Draw edges
+
+    \path [arrow]
+    (fetch.east) -- (decode.west);
+
+    \path [arrow]
+    (decode.east) -- (execute.west);
+
+\end{tikzpicture}
+\caption {Processor dataflow stages}
+\label {fig:processor-dataflow-stages}
+\end {figure}
+
+\section{Instruction set architecture}
+
+The job of a processor is to execute a stream of instructions. The supported
+instructions are defined and described in the instruction set.
+
+
+\subsection{Instruction format}
+
+The instruction format describes the components of an instruction and their
+location in it.
+
+The instruction format can be described in terms of a number of attributes.
+
+\subsubsection{Length}
+
+\begin{itemize}
+    \item{Fixed length - all instructions are of equal length. All instructions
+        in the memory are aligned. This type of instructions take more memory to
+        store. They can be decoded faster than variable length instructions as
+        an entire instruction can be fed into the decoder at once.}
+    \item{Variable length - instructions may have different lengths. There are
+        no gaps between shorter and longer instructions and thus the
+        instructions are not aligned. These instructions take less memory to
+        store.}
+\end{itemize}
+
+\subsubsection{Structure}
+
+\begin{itemize}
+    \item{Fixed structure - all instructions have the same components at the
+        same locations. For variable length instructions, some of the components
+        may be disabled and thus not included in the instruction. If an
+        instruction is fixed length and fixed structure, it can be fed into the
+        decoder at once and all the components decoded in parallel.}
+    \item{Variable structure - the instruction is decoded serially and the
+        remainder of the instruction structure depends on the previous and
+        current components, and even on the values of some registers}
+\end{itemize}
+
+\subsubsection{Format}
+
+\begin{itemize}
+    \item{Fixed format - the processor has a single instruction set}
+    \item{Variable format - the processor can be instructed to modify or replace
+        some or all of the instruction set with custom instructions and
+        formats. This would mean that the processor would convert some defined
+        instruction set into a fixed lower level microcode.}
+\end{itemize}
+
+\subsection{Instruction data}
+
+\subsubsection{Location}
+
+The data an instruction operates on can be located in the following places:
+
+\begin{itemize}
+    \item{Embedded in the instruction - the instruction itself has the data}
+    \item{Registers - the instruction reads or writes the data from or to
+        specified registers}
+    \item{Memory - the instruction reads or writes the data from or to
+        specified memory addresses}
+\end{itemize}
+
+\subsubsection{Quantity}
+
+\begin{itemize}
+    \item{Single data - the instruction operates on one or more data units at
+        individual specified locations}
+    \item{Aggregate data - the instruction operates on data in a specified
+        location range, be it registers or memory or the instruction itself}
+\end{itemize}
+
+\subsubsection{Granularity}
+
+\begin{itemize}
+    \item{Single instruction single data (SISD) - The instruction operates on
+        the entire data unit at a specified location}
+    \item{Single instruction multiple data (SIMD) - The instruction operates on
+        a single data unit, however it splits that data unit into multiple units
+        and executes the instruction on those smaller units in parallel}
+\end{itemize}
+
+\subsubsection{Size}
+
+An instruction operates on one or more data units of fixed length. The length is
+determined by the value of some instruction format components.
+
+\subsection{Addressing schemes}
+
+\begin{itemize}
+    \item{Direct addressing}
+    \item{Indirect addressing}
+        \begin{itemize}
+            \item{Single level indirection}
+            \item{Multiple level indirection}
+        \end{itemize}
+
+        \begin{itemize}
+            \item{Simple indirection}
+            \item{Complex indirection}
+        \end{itemize}
+\end{itemize}
+
 \end{document}

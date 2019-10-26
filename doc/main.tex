@@ -4,15 +4,44 @@
 \usepackage{tikz}
 \usepackage{listings}
 
-\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{shapes,arrows, decorations.pathreplacing, positioning}
 
 \title{Main documentation}
 
 % Define block styles
 
-\tikzstyle{block} = [rectangle, draw, text centered, rounded corners,
-    minimum height=4em]
-\tikzstyle{arrow} = [draw, -latex]
+\tikzset{block/.style=
+   {rectangle,
+    draw,
+    text centered,
+    rounded corners,
+    minimum height=4em}}
+
+\tikzset{instruction/.style =
+   {rectangle split,
+    rectangle split parts=5,
+    rectangle split horizontal,
+    draw,
+    text centered,
+    minimum height=2em}}
+
+\tikzset{instruction-bits-variable/.style =
+    {rectangle split,
+     rectangle split
+     horizontal,
+     draw,
+     text centered,
+     minimum height=1em}}
+
+\tikzset{instruction-bits/.style =
+   {rectangle split,
+    rectangle split parts=8,
+    rectangle split horizontal,
+    draw,
+    text centered,
+    minimum height=1em}}
+
+\tikzset{arrow/.style = {draw, -latex}}
 
 \lstdefinestyle{mainVHDL}
 {
@@ -708,31 +737,125 @@ The dataflow through a processor consists of 3 stages, as shown in Figure
 \label {fig:processor-dataflow-stages}
 \end {figure}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Instruction set architecture}
 
 The job of a processor is to execute a stream of instructions. The supported
-instructions are defined and described in the instruction set.
+instructions definitions and descriptions form an instruction set.
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Instruction format}
 
 The instruction format describes the components of an instruction and their
-location in it.
+location within it as shown in Figure \ref{fig:instruction-format-components}.
 
-The instruction format can be described in terms of a number of attributes.
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction, label=west:{Some instruction:}] (main)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {\ldots}
+     \nodepart{five}  {comp N}};
+
+    \draw [decorate, decoration={brace, mirror, amplitude=0.5em}]
+     ([yshift=-2em]main.west) -- ([yshift=-2em]main.east)
+     node [black,midway,yshift=-2.5em] {length};
+
+\end{tikzpicture}
+\caption {Instruction format components}
+\label {fig:instruction-format-components}
+\end {figure}
 
 \subsubsection{Length}
 
 \begin{itemize}
-    \item{Fixed length - all instructions are of equal length. All instructions
-        in the memory are aligned. This type of instructions take more memory to
-        store. They can be decoded faster than variable length instructions as
-        an entire instruction can be fed into the decoder at once.}
+    \item{Fixed length - all instructions are of equal length as shown in Figure
+        \ref{fig:fixed-instruction-length}. All instructions in the memory are
+        aligned. This type of instructions take more memory, however they can
+        be decoded faster than variable length instructions as an entire
+        instruction can be fed into the decoder at once.}
+
+    \begin {figure}[H]
+    \centering
+    \begin{tikzpicture}[auto]
+
+        \node [instruction-bits,
+               label=west:{instr 0:}] (instr0) {};
+
+        \node [instruction-bits,
+               below of = instr0,
+               node distance = 2em,
+               label=west:{instr 1:}] (instr1) {};
+
+        \node [auto=false,
+               below of=instr1,
+               node distance = 2em] (dots) {\ldots};
+
+        \node [instruction-bits,
+               below of = dots,
+               node distance = 2em,
+               label=west:{instr N:}] (instrN) {};
+
+        \draw [decorate, decoration={brace, amplitude=0.5em}]
+         ([xshift=0.5em]instr0.east) -- ([xshift=0.5em]instrN.east)
+         node [black,midway, xshift=0.5em] {fixed length};
+
+    \end{tikzpicture}
+    \caption {Fixed length instructions}
+    \label {fig:fixed-instruction-length}
+    \end {figure}
+
+
     \item{Variable length - instructions may have different lengths. There are
         no gaps between shorter and longer instructions and thus the
-        instructions are not aligned. These instructions take less memory to
-        store.}
+        instructions are not aligned. These instructions take less memory,
+        however are slower to decode than fixed length instructions as the
+        instruction length is unknown preemptively.}
 \end{itemize}
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits-variable,
+           rectangle split parts=7,
+           label={west:{instr 0:}}] (instr0) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts=8,
+           node distance = 2em,
+           label={west:{instr 1:}},
+           below = of instr0.west,
+           anchor=west] (instr1) {};
+
+    \node [auto=false,
+           node distance = 1em,
+           below = of instr1] (dots) {\ldots};
+
+    \node [instruction-bits-variable,
+           rectangle split parts=5,
+           node distance = 4em,
+           label={west:{instr N:}},
+           below = of instr1.west,
+           anchor=west] (instrN) {};
+
+    \draw [decorate, decoration={brace, amplitude=0.5em}]
+     ([xshift=10em]instr0.west) -- ([xshift=10em]instrN.west)
+     node [black,midway, xshift=0.5em] {variable length};
+
+\end{tikzpicture}
+\caption {Fixed length instructions}
+\label {fig:instruction-format-components}
+\end {figure}
+
+
 
 \subsubsection{Structure}
 
@@ -783,9 +906,9 @@ The data an instruction operates on can be located in the following places:
 \subsubsection{Granularity}
 
 \begin{itemize}
-    \item{Single instruction single data (SISD) - The instruction operates on
+    \item{Single instruction single data (SISD) - the instruction operates on
         the entire data unit at a specified location}
-    \item{Single instruction multiple data (SIMD) - The instruction operates on
+    \item{Single instruction multiple data (SIMD) - the instruction operates on
         a single data unit, however it splits that data unit into multiple units
         and executes the instruction on those smaller units in parallel}
 \end{itemize}
@@ -796,6 +919,8 @@ An instruction operates on one or more data units of fixed length. The length is
 determined by the value of some instruction format components.
 
 \subsection{Addressing schemes}
+
+
 
 \begin{itemize}
     \item{Direct addressing}

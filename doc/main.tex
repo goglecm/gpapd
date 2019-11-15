@@ -4,7 +4,12 @@
 \usepackage{tikz}
 \usepackage{listings}
 
-\usetikzlibrary{shapes,arrows, decorations.pathreplacing, positioning}
+\usetikzlibrary{shapes,
+                arrows,
+                decorations.pathreplacing,
+                positioning,
+                patterns,
+                fit}
 
 \title{Main documentation}
 
@@ -700,7 +705,7 @@ diagram.
 The process specification describes (using VHDL) each process' elements based on
 the dynamic channel diagram.
 
-\chapter{Process architecture}
+\chapter{Processor architecture}
 
 \section{Background}
 
@@ -740,7 +745,9 @@ The dataflow through a processor consists of 3 stages, as shown in Figure
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Instruction set architecture}
+\section{Fetch: Caching strategies}
+
+\section{Decode: Instruction set architecture}
 
 The job of a processor is to execute a stream of instructions. The supported
 instructions definitions and descriptions form an instruction set.
@@ -777,10 +784,11 @@ location within it as shown in Figure \ref{fig:instruction-format-components}.
 
 \begin{itemize}
     \item{Fixed length - all instructions are of equal length as shown in Figure
-        \ref{fig:fixed-instruction-length}. All instructions in the memory are
-        aligned. This type of instructions take more memory, however they can
-        be decoded faster than variable length instructions as an entire
-        instruction can be fed into the decoder at once.}
+        \ref{fig:fixed-instruction-length}. All instructions in memory are
+        aligned as shown in Figure \ref{fig:aligned-fixed-instruction-length}.
+        This type of instructions take more memory, however they can be decoded
+        faster than variable length instructions as an entire instruction can
+        be fed into the decoder at once.}
 
     \begin {figure}[H]
     \centering
@@ -813,11 +821,13 @@ location within it as shown in Figure \ref{fig:instruction-format-components}.
     \end {figure}
 
 
-    \item{Variable length - instructions may have different lengths. There are
+    \item{Variable length - instructions may have different lengths as shown in
+        Figure \ref{fig:variable-instruction-length}. There are
         no gaps between shorter and longer instructions and thus the
-        instructions are not aligned. These instructions take less memory,
-        however are slower to decode than fixed length instructions as the
-        instruction length is unknown preemptively.}
+        instructions are not aligned as shown in Figure
+        \ref{fig:misaligned-variable-instruction-length}. These instructions
+        take less memory, however are slower to decode than fixed length
+        instructions as the instruction length is not preemptively known.}
 \end{itemize}
 
 \begin {figure}[H]
@@ -851,8 +861,114 @@ location within it as shown in Figure \ref{fig:instruction-format-components}.
      node [black,midway, xshift=0.5em] {variable length};
 
 \end{tikzpicture}
-\caption {Fixed length instructions}
-\label {fig:instruction-format-components}
+\caption {Variable length instructions}
+\label {fig:variable-instruction-length}
+\end {figure}
+
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits,
+           rectangle split part fill={red},
+           label=west:{0x1000}] (block0) {};
+
+    \node [instruction-bits,
+           rectangle split part fill={blue},
+           below of = block0,
+           node distance = 1.5em,
+           label=west:{0x1008}] (block1) {};
+
+    \node [instruction-bits,
+           rectangle split part fill={red},
+           below of = block1,
+           node distance = 1.5em,
+           label=west:{0x1010}] (block2) {};
+
+    \node [instruction-bits,
+           rectangle split part fill={blue},
+           below of = block2,
+           node distance = 1.5em,
+           label=west:{0x1018}] (block3) {};
+
+\end{tikzpicture}
+\caption {Aligned memory with fixed length instructions}
+\label {fig:aligned-fixed-instruction-length}
+\end {figure}
+
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits,
+           rectangle split part fill={red, red, red, red, red, blue},
+           label=west:{0x1000}] (block0) {};
+
+    \node [instruction-bits,
+           rectangle split part fill={blue, blue, red, red, red, blue},
+           below of = block0,
+           node distance = 1.5em,
+           label=west:{0x1008}] (block1) {};
+
+    \node [instruction-bits,
+           rectangle split part fill={blue},
+           below of = block1,
+           node distance = 1.5em,
+           label=west:{0x1010}] (block2) {};
+
+    \node [instruction-bits,
+           rectangle split part fill={blue, red},
+           below of = block2,
+           node distance = 1.5em,
+           label=west:{0x1018}] (block3) {};
+
+    \node [auto=false,
+           xshift=6em,
+           yshift = -2.25em] (arrow) {$\Rightarrow$};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 5,
+           rectangle split part fill={red},
+           xshift=13.5em,
+           label=west:{0x1000}] (rblock0) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 5,
+           rectangle split part fill={blue},
+           node distance = 1.5em,
+           label=west:{0x1005},
+           below = of rblock0.west,
+           anchor=west] (rblock1) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 3,
+           rectangle split part fill={red},
+           node distance = 1.5em,
+           label=west:{0x1008},
+           below = of rblock1.west,
+           anchor=west] (rblock2) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 12,
+           rectangle split part fill={blue},
+           node distance = 1.5em,
+           label=west:{0x100B},
+           below = of rblock2.west,
+           anchor=west] (rblock3) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 7,
+           rectangle split part fill={red},
+           node distance = 1.5em,
+           label=west:{0x1019},
+           below = of rblock3.west,
+           anchor=west] (rblock4) {};
+
+\end{tikzpicture}
+\caption {Misaligned memory with variable length instructions}
+\label {fig:misaligned-variable-instruction-length}
 \end {figure}
 
 
@@ -862,22 +978,223 @@ location within it as shown in Figure \ref{fig:instruction-format-components}.
 \begin{itemize}
     \item{Fixed structure - all instructions have the same components at the
         same locations. For variable length instructions, some of the components
-        may be disabled and thus not included in the instruction. If an
-        instruction is fixed length and fixed structure, it can be fed into the
-        decoder at once and all the components decoded in parallel.}
+        may be disabled and thus not included in the instruction as shown in
+        Figure \ref{fig:variable-length-fixed-structure-instructions}.
+        Similarly, for fixed length instructions, some components may be
+        disabled, however they are included in the instruction and are ignored
+        by the decoder as shown in Figure
+        \ref{fig:fixed-length-fixed-structure-instructions}. If an instruction
+        is fixed length and fixed structure, it can be fed into the decoder at
+        once with all of its components decoded in parallel.}
     \item{Variable structure - the instruction is decoded serially and the
         remainder of the instruction structure depends on the previous and
-        current components, and even on the values of some registers}
+        current components, and even on the values of some registers. Usually
+        the first component of this type of instructions is the same for all
+        instructions as it is usually used to identify the instruction type.
+        Also, this type of instructions are usually variable length as it is
+        rather difficult and inefficient to have fixed length instructions with
+        different components across the instruction set. Usually the structure
+        of an instruction can be fixed yet complex, such that for variable
+        length instructions there may be a large number of components, most of
+        which are disabled for most instructions. This is not to be confused
+        with variable structure instructions as decoding these instructions
+        requires looking up the next allowed components through a tree, whereas
+        fixed structure instructions have a linear lookup (with components in
+        the line simply being skipped). The instructions from Figure
+        \ref{fig:variable-length-variable-structure-instructions} would require
+        3 branches in the lookup tree.}
 \end{itemize}
 
-\subsubsection{Format}
+Note that fixed structure instructions are are a mere subset of variable
+structure instructions. The branches of the lookup tree can also merge and be
+cyclic. At each divergence in the tree, the current and previous components and
+some registers decide which path to take. Such instructions may be incredibly
+complex and are very slow to decode.
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           rectangle split part fill = {white, white, green, white},
+           label=east:{$\rightarrow$ instr 0},
+           label=west:{0x1000}] (block0)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           rectangle split part fill = {white, white, green, white},
+           label=east:{$\rightarrow$ instr 1},
+           label=west:{0x1008},
+           node distance = 2em,
+           below = of block0.west,
+           anchor=west] (block1)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           label=east:{$\rightarrow$ instr 2},
+           label=west:{0x1010},
+           node distance = 2em,
+           below = of block1.west,
+           anchor=west] (block2)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           rectangle split part fill = {white, green, white, white},
+           label=east:{$\rightarrow$ instr 3},
+           label=west:{0x1018},
+           node distance = 2em,
+           below = of block2.west,
+           anchor=west] (block3)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {comp 3}};
+
+\end{tikzpicture}
+\caption {Instructions with a fixed structure (4 components) and fixed length.
+          The coloured components are ignored by the decoder. Each component may
+          have different lengths.}
+\label {fig:fixed-length-fixed-structure-instructions}
+\end {figure}
+
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 3,
+           label=east:{$\rightarrow$ instr 0},
+           label=west:{0x1000}] (block0)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 3,
+           label=east:{$\rightarrow$ instr 1},
+           label=west:{0x1006},
+           node distance = 2em,
+           below = of block0.west,
+           anchor=west] (block1)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           label=east:{$\rightarrow$ instr 2},
+           label=west:{0x100C},
+           node distance = 2em,
+           below = of block1.west,
+           anchor=west] (block2)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 3,
+           label=east:{$\rightarrow$ instr 3},
+           label=west:{0x1014},
+           node distance = 2em,
+           below = of block2.west,
+           anchor=west] (block3)
+    {\nodepart{one} {comp 0}
+     \nodepart{two} {comp 2}
+     \nodepart{three} {comp 3}};
+
+\end{tikzpicture}
+\caption {Instructions with a fixed structure (4 components) and variable
+          length. The missing components are not included in the instruction.
+          Also, each component may have different lengths.}
+\label {fig:variable-length-fixed-structure-instructions}
+\end {figure}
+
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 5,
+           label=east:{$\rightarrow$ instr 0},
+           label=west:{0x1000}] (block0)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp A}
+     \nodepart{three} {comp B}
+     \nodepart{four}  {comp C}
+     \nodepart{five}  {comp D}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 3,
+           label=east:{$\rightarrow$ instr 1},
+           label=west:{0x1006},
+           node distance = 2em,
+           below = of block0.west,
+           anchor=west] (block1)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           label=east:{$\rightarrow$ instr 2},
+           label=west:{0x100C},
+           node distance = 2em,
+           below = of block1.west,
+           anchor=west] (block2)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three} {comp 2}
+     \nodepart{four}  {comp 3}};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 3,
+           label=east:{$\rightarrow$ instr 3},
+           label=west:{0x1014},
+           node distance = 2em,
+           below = of block2.west,
+           anchor=west] (block3)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp b}
+     \nodepart{three} {comp c}};
+
+\end{tikzpicture}
+\caption {Instructions with a variable structure (3 sets of variations, lower
+          case letters, upper case letters and digits) and variable length
+          (there may be gaps between the numbering or lettering). Each
+          component may have different lengths.}
+\label {fig:variable-length-variable-structure-instructions}
+\end {figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Architecture}
 
 \begin{itemize}
-    \item{Fixed format - the processor has a single instruction set}
-    \item{Variable format - the processor can be instructed to modify or replace
-        some or all of the instruction set with custom instructions and
-        formats. This would mean that the processor would convert some defined
-        instruction set into a fixed lower level microcode.}
+    \item{Fixed architecture - the processor has a single instruction set}
+    \item{Variable architecture - the processor can be instructed to modify or
+        replace some or all of the instruction set with custom instructions and
+        formats. The processor can also be told to start decoding the
+        instructions according to a different instruction set architecture.
+        This would mean that the processor would convert the specified
+        instruction set instructions into some lower level instructions. This
+        would mean that the processor can have one or more interpreters on top.
+        Processors supporting variable architectures have a rather high latency
+        due having 2 or more stages of decoding.}
 \end{itemize}
 
 \subsection{Instruction data}
@@ -893,6 +1210,11 @@ The data an instruction operates on can be located in the following places:
     \item{Memory - the instruction reads or writes the data from or to
         specified memory addresses}
 \end{itemize}
+
+Surely data can be located in other media, which are usually to slow to directly
+access. These media are memory mapped so that the processor can access them by
+reading or writing to some memory locations. Some media can be controlled by
+some registers inside the processor.
 
 \subsubsection{Quantity}
 
@@ -915,25 +1237,243 @@ The data an instruction operates on can be located in the following places:
 
 \subsubsection{Size}
 
-An instruction operates on one or more data units of fixed length. The length is
-determined by the value of some instruction format components.
+An instruction operates on one or more data units of fixed length. The data
+length is determined by the value of some instruction format components.
+
+\subsection{Memory architectures}
+
+There are 2 main types of memory architectures:
+
+\begin{itemize}
+    \item{Shared (von Newman) - The instructions and data are located in the
+        same memory.}
+    \item{Separate (Harvard) - The instructions are located in a separate memory space
+        than the instructions. Instructions can still have data embedded in
+        them. This type of memory allows for parallel data and instruction
+        accesses. }
+\end{itemize}
 
 \subsection{Addressing schemes}
 
+Memory addressing refers to the way the location of a piece of data determined.
 
+\subsubsection{Simple addressing}
 
 \begin{itemize}
-    \item{Direct addressing}
-    \item{Indirect addressing}
-        \begin{itemize}
-            \item{Single level indirection}
-            \item{Multiple level indirection}
-        \end{itemize}
-
-        \begin{itemize}
-            \item{Simple indirection}
-            \item{Complex indirection}
-        \end{itemize}
+    \item{No addressing - the data is located inside the instruction and no
+        addressing is required as shown in Figure \ref{fig:no-addressing}. The
+        instruction can, thus be executed immediately.}
+    \item{Direct addressing - the data is located at the specified register or
+        memory location. It therefore can be accessed directly as the register
+        or memory address is known. This slows down the execution as the
+        instruction is blocked until the data is available.}
 \end{itemize}
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           rectangle split part fill={white, white, green, white}] (block0)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three}  {data}
+     \nodepart{four}  {comp 3}};
+
+\end{tikzpicture}
+\caption {The data is located inside the instruction, hence no further
+          addressing is required.}
+\label {fig:no-addressing}
+\end {figure}
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1000}] (block0) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1008},
+           node distance = 2em,
+           below = of block0.west,
+           anchor=west] (block1) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           rectangle split part fill={green},
+           label=east:{0x1010},
+           node distance = 2em,
+           below = of block1.west,
+           anchor=west] (block2) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1018},
+           node distance = 2em,
+           below = of block2.west,
+           anchor=west] (block3) {};
+
+    \node[fit=(block0)(block1)(block2)(block3)] (mem) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           rectangle split part fill={white, white, yellow, white},
+           node distance = 1em,
+           above left = of mem] (instr)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three}  {address[0x1010]}
+     \nodepart{four}  {comp 3}};
+
+     \draw (instr.three south) edge[out=270,in=180,->] (block2.west) ;
+
+\end{tikzpicture}
+\caption {The data is located at the specified memory address. This address
+          should be dereferenced to retrieve the data.}
+\label {fig:single-level-indirection}
+\end {figure}
+
+\subsubsection{Indirect addressing}
+
+There may be one or more stages of indirection:
+
+\begin{itemize}
+
+    \item{Single level indirection - the memory address (or register
+        number) of the data is located in a register or another memory
+        location as shown in Figure \ref{fig:single-level-indirection}.}
+
+    \item{Multiple level indirection - the data is located at the memory
+        location whose address is located at a memory address or
+        register. Similarly, the data is located in a register whose
+        number is located at a memory address or another register as shown in
+        Figure \ref{fig:multi-level-indirection}. Each stage of indirection
+        further delays the instruction execution. }
+
+\end{itemize}
+
+\begin {figure}[H]
+\centering
+\begin{tikzpicture}[auto]
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1000}] (block0) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1008},
+           node distance = 2em,
+           below = of block0.west,
+           anchor=west] (block1) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           rectangle split part fill={yellow},
+           label=east:{0x1010},
+           node distance = 2em,
+           below = of block1.west,
+           anchor=west] (block2) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1018},
+           node distance = 2em,
+           below = of block2.west,
+           anchor=west] (block3) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1020},
+           node distance = 2em,
+           below = of block3.west,
+           anchor=west] (block4) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1028},
+           node distance = 2em,
+           below = of block4.west,
+           anchor=west] (block5) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           label=east:{0x1030},
+           node distance = 2em,
+           below = of block5.west,
+           anchor=west] (block6) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 8,
+           rectangle split part fill={green},
+           label=east:{0x1038},
+           node distance = 2em,
+           below = of block6.west,
+           anchor=west] (block7) {};
+
+    \node[fit=(block0)
+              (block1)
+              (block2)
+              (block3)
+              (block4)
+              (block5)
+              (block6)
+              (block7)] (mem) {};
+
+    \node [instruction-bits-variable,
+           rectangle split parts = 4,
+           rectangle split part fill={white, white, red, white},
+           node distance = 1em,
+           above left = of mem] (instr)
+    {\nodepart{one}   {comp 0}
+     \nodepart{two}   {comp 1}
+     \nodepart{three}  {address[0x1010]}
+     \nodepart{four}  {comp 3}};
+
+     \draw (instr.three south) edge[out=270,in=180,->] (block2.west) ;
+     \draw (block2.south west) edge[out=180,in=180,->] (block7.west) ;
+
+\end{tikzpicture}
+\caption {The data is located at the specified memory address in another memory
+location. First the address 0x1010 (red) should be dereferenced to obtain a
+second address (yellow). The second address should be dereferenced to obtain
+the data (green).}
+\label {fig:multi-level-indirection}
+\end {figure}
+
+The addresses used for indirect addressing can be of 2 types:
+
+\begin{itemize}
+    \item{Absolute - the complete address is available. }
+    \item{Relative - the relative address to the current instruction pointer is
+        available. This is only possible in von Newman architectures as the data
+        memory is shared with the instruction memory. This type of addressing
+        (compared to absolute addressing) exploits spacial locality as the
+        data/instructions surrounding the current instruction are highly likely
+        to be cached (though this depends on the caching strategy). }
+\end{itemize}
+
+The indirection at each stage may be simple or complex:
+
+\begin{itemize}
+    \item{Simple indirection - The address at which the data is located is
+        stored in plain format. It can be read and dereferenced directly without
+        the need of any additional computation. }
+    \item{Complex indirection - The address at which the data is located should
+        be calculated to produce a full address. This involves taking a base
+        address, and adding a scaled index to it altogether known as SIB (scale,
+        index, base) addressing as shown in Equation \ref{eq:SIB}. The scale,
+        index and base components can be literals, or the values of some
+        registers or memory locations and is hence slower than simple
+        indirection.}
+\end{itemize}
+
+\begin{equation}
+    \label{eq:SIB}
+    effective\_address = base + scale * index
+\end{equation}
 
 \end{document}

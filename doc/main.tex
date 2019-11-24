@@ -745,7 +745,160 @@ The dataflow through a processor consists of 3 stages, as shown in Figure
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Fetch: Caching strategies}
+\section{Fetch: Caching}
+
+\subsection{Background}
+
+The instructions and data are stored in the primary memory (usually RAM), which
+are then fetched and executed by the processor. Usually the processor executes
+an instruction faster than it is fetched, thus the primary memory stalls the
+processor execution.
+
+The cache is a small and fast memory block located around or inside the
+processor. It holds a small portion of the primary memory, specifically around
+the current instruction or data pointers. This was the processor can access
+the instructions and data at the cache speed rather than the primary memory
+speed, thus improving execution speed. The cache inside the processor usually
+operates at the same speed as the processor and thus the execution is not
+stalled. The cache around the processor is larger but slightly slower than the
+cache inside the processor.
+
+\subsection{Cache layout}
+
+There are 3 levels of cache:
+
+\begin{itemize}
+    \item { Level 1 (L1) - cache is located inside each of the processor's cores. It
+        operates at the core speed and is rather small.}
+
+    \item { Level 2 (L2) - cache is located inside the processor and is shared among
+        the processor's cores. It is slower than L1 cache but larger.}
+
+    \item { Level 3 (L3) - cache is located around the processor. It is slower
+        than L2 but larger.  }
+
+\end{itemize}
+
+The cache may follow a unified architecture, thus holding both instructions and
+data, or split holding instructions and data in separate sections. The later
+allows for parallel cache accesses.
+
+The primary memory stored data in blocks.
+
+The cache stores data in cache lines.
+
+The processor registers store data in words.
+
+A cache can be described in terms of the number of cache lines and the cache
+line width. Each cache line contains 3 elements, the cache data, a tag and a set
+of control/valid bits.
+
+Let $size(c)$ be the number of cache lines in cache $c$.
+
+Let $width(c)$ be the width of a cache line in cache $c$.
+
+Let $width_{tag}(c)$ be the width of the tag field in a cache line of cache $c$.
+
+Let $width_{data}(c)$ be the width of the data field in a cache line of cache
+$c$.
+
+Let $width_{control}(c)$ be the width of the control/valid bits field in a cache
+line of cache $c$.
+
+Let $tag_c(n)$ be the tag value of cache line $n$ of cache $c$.
+
+Let $data_c(n)$ be the data value of cache line $n$ of cache $c$.
+
+Let $control_c(n)$ be the value of the control/valid field of cache line $n$ of
+cache $c$.
+
+\subsection{Cache mapping}
+
+Cache mapping refers to which cache lines can hold which primary memory blocks.
+
+When a cache becomes full, a cache line replacement algorithm is used to decide
+which cache lines to replace.
+
+\subsubsection{Direct mapping}
+
+A block of the main memory maps only to a single cache line.
+
+The cache line number is given by:
+
+\begin{equation}
+    N = A \bmod size(c)
+\end{equation}
+
+where $A$ is the primary memory address and $N$ is the mapped cache line number.
+
+When the cache becomes full, the cache line mapped to the new memory fetch is
+replaced. The replacement algorithm is a simple direct memory assignment.
+
+This type of mapping is rather effective when the entire primary memory is used
+evenly. If one part of the primary memory is used more often, and some parts of
+the primary memory are not used at all, some cache lines may not be used at all,
+thus reducing the amount of effective cache.
+
+The tag and some of the control bits represent the block number.
+
+\subsubsection{Fully associative mapping}
+
+Any cache line can be mapped to any memory location. This mapping requires a
+more elaborate cache replacement algorithm.
+
+\subsubsection{Set associative mapping}
+
+The cache is divided into sets of cache lines. Each set can only map to a single
+part of the primary memory. Within each set, the cache lines can map to any
+block of memory.
+
+Essentially, there is direct mapping at the set level and fully associative
+mapping at the cache line level within a set.
+
+The number of cache lines in a set is known as the $k$ value, hence the mapping
+is described as $k$-way set associative mapping.
+
+Direct mapping therefore is 1-way associative mapping.
+
+\subsection{Cache write strategies}
+
+\subsubsection{Write-through}
+
+The primary memory is updated immediately once the cache is updated. This often
+creates excessive primary memory traffic.
+
+\subsubsection{Write-back}
+
+The primary memory is only updated when a cache line is replaced. This posses
+some risk when the primary memory is used by other peripherals as well as it may
+not hold the most up-to-date contents.
+
+\subsection{Cache replacement strategies}
+
+Spacial locality refers to the likelihood of the next memory fetches to be
+around the current instruction or data pointers.
+
+Temporal locality refers to the likelihood of the same memory fetches to be done
+again in the near future.
+
+Different caching strategies are used to improve spacial and temporal
+localities.
+
+When the value of a memory fetch is available in cache, the processor has
+\textbf{hit the cache}. Similarly, when the value of the memory fetch is not
+available in cache, the processor has \textbf{missed the cache}.
+
+Note: When the cache of each core hold a copy of the same cache line, it is
+enough for one core to update the value of the cache line to render the same
+cache line invalid on the other cores. The cache is said to be coherent when it
+marks the cache line as invalid when such event occurs.
+
+It is more problematic however on multiprocessor systems, where there is a
+rather high latency between the data becoming incoherent and it being marked as
+invalid.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Decode: Instruction set architecture}
 
